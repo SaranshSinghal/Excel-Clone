@@ -1,501 +1,501 @@
 body {
-    margin: 0;
+  margin: 0;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
-    color: #444;
-    height: 100vh;
-    font-family: sans-serif;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  color: #444;
+  height: 100vh;
+  font-family: sans-serif;
+  position: relative;
 }
 
 .title {
-    background-color: #217346;
-    text-align: center;
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    height: 5vh;
-    color: #fff;
+  background-color: #217346;
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  height: 5vh;
+  color: #fff;
 }
 
 .menu-bar {
-    display: flex;
-    height: 4.5vh;
-    font-size: 0.9rem;
-    background-color: #217346;
+  display: flex;
+  height: 4.5vh;
+  font-size: 0.9rem;
+  background-color: #217346;
 }
 
 .menu-bar-item {
-    background-color: #217346;
-    color: #fff;
-    padding: 0 0.7rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background-color: #217346;
+  color: #fff;
+  padding: 0 0.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .menu-bar-item:hover {
-    background-color: #195534;
-    cursor: pointer;
+  background-color: #195534;
+  cursor: pointer;
 }
 
 .menu-bar-item.selected {
-    background-color: #fff;
-    color: #217346;
+  background-color: #fff;
+  color: #217346;
 }
 
 .menu-bar-item.selected:hover {
-    background-color: #fff;
-    cursor: default;
+  background-color: #fff;
+  cursor: default;
 }
 
 .menu-icon-bar {
-    background-color: #efefef;
-    display: flex;
-    height: 5vh;
-    align-items: center;
+  background-color: #efefef;
+  display: flex;
+  height: 5vh;
+  align-items: center;
 }
 
 .menu-icon {
-    padding: 0 0.7rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
+  padding: 0 0.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 .menu-icon:hover {
-    background-color: #fafafa;
-    cursor: pointer;
+  background-color: #fafafa;
+  cursor: pointer;
 }
 
 .menu-icon.selected {
-    background-color: #a0a0a0;
+  background-color: #a0a0a0;
 }
 
 .menu-selector {
-    height: 3.5vh;
-    font-size: 1rem;
-    margin: 0 0.5rem;
+  height: 3.5vh;
+  font-size: 1rem;
+  margin: 0 0.5rem;
 }
 
 .menu-selector:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #font-family {
-    width: 10vw;
-    min-width: 130px;
-    font-family: Noto Sans;
+  width: 10vw;
+  min-width: 130px;
+  font-family: Noto Sans;
 }
 
 #font-size {
-    width: 3.5vw;
-    min-width: 55px;
+  width: 3.5vw;
+  min-width: 55px;
 }
 
 #fill-color {
-    border-bottom: 4px solid #fff;
-    padding-bottom: 2px;
+  border-bottom: 4px solid #fff;
+  padding-bottom: 2px;
 }
 
 #text-color {
-    border-bottom: 4px solid #444;
-    padding-bottom: 2px;
+  border-bottom: 4px solid #444;
+  padding-bottom: 2px;
 }
 
 .formula-bar {
-    display: flex;
-    height: 5vh;
-    justify-content: center;
-    align-items: center;
-    background-color: #efefef;
-    padding: 0.1rem 0.3rem;
+  display: flex;
+  height: 5vh;
+  justify-content: center;
+  align-items: center;
+  background-color: #efefef;
+  padding: 0.1rem 0.3rem;
 }
 
 #selected-cell {
-    width: 120px;
-    border: 1px solid #d3d3d3;
-    padding: 0 0.5rem;
-    height: 70%;
-    display: flex;
-    align-items: center;
-    background-color: #fff;
-    overflow: hidden;
+  width: 120px;
+  border: 1px solid #d3d3d3;
+  padding: 0 0.5rem;
+  height: 70%;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  overflow: hidden;
 }
 
 #formula-sign {
-    width: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 70%;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70%;
 }
 
 #formula-input {
-    width: calc(100vw - 160px);
-    border: 1px solid #d3d3d3;
-    padding: 0 0.5rem;
-    height: 70%;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    background-color: #fff;
+  width: calc(100vw - 160px);
+  border: 1px solid #d3d3d3;
+  padding: 0 0.5rem;
+  height: 70%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: #fff;
 }
 
 .data-container {
-    display: flex;
-    height: 76vh;
-    flex-wrap: wrap;
-    width: 100vw;
+  display: flex;
+  height: 76vh;
+  flex-wrap: wrap;
+  width: 100vw;
 }
 
 #select-all {
-    width: 25px;
-    height: 25px;
-    border-right: 1px solid #a0a0a0;
-    background-color: #efefef;
+  width: 25px;
+  height: 25px;
+  border-right: 1px solid #a0a0a0;
+  background-color: #efefef;
 }
 
 #ewr-hdrcornerwidget {
-    margin: 5px 0 0 4px;
-    width: 0;
-    height: 0;
-    border-left: 18px solid transparent;
-    border-bottom: 18px solid #c2c2c2;
+  margin: 5px 0 0 4px;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-bottom: 18px solid #c2c2c2;
 }
 
 #columns {
-    height: 25px;
-    width: calc(100vw - 25px);
-    border-bottom: 1px solid #a0a0a0;
-    background-color: #efefef;
-    display: flex;
-    overflow: hidden;
+  height: 25px;
+  width: calc(100vw - 25px);
+  border-bottom: 1px solid #a0a0a0;
+  background-color: #efefef;
+  display: flex;
+  overflow: hidden;
 }
 
 .column-name {
-    min-width: 100px;
-    width: 100px;
-    border-right: 1px solid #a0a0a0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  min-width: 100px;
+  width: 100px;
+  border-right: 1px solid #a0a0a0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #rows {
-    width: 25px;
-    height: calc(76vh - 25px);
-    background-color: #efefef;
-    border: 1px solid #a0a0a0;
-    overflow: hidden;
+  width: 25px;
+  height: calc(76vh - 25px);
+  background-color: #efefef;
+  border: 1px solid #a0a0a0;
+  overflow: hidden;
 }
 
 .row-name {
-    min-height: 25px;
-    height: 25px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-bottom: 1px solid #a0a0a0;
+  min-height: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid #a0a0a0;
 }
 
 #cells {
-    position: relative;
-    width: calc(100vw - 25px);
-    height: calc(76vh - 25px);
-    border: 1px solid #efefef;
-    overflow: scroll;
+  position: relative;
+  width: calc(100vw - 25px);
+  height: calc(76vh - 25px);
+  border: 1px solid #efefef;
+  overflow: scroll;
 }
 
 #cells:hover {
-    cursor: cell;
+  cursor: cell;
 }
 
 .cell-row {
-    display: flex;
+  display: flex;
 }
 
 .input-cell {
-    min-width: 100px;
-    width: 100px;
-    min-height: 25px;
-    height: 25px;
-    border-bottom: 1px solid #a0a0a0;
-    border-right: 1px solid #a0a0a0;
-    padding: 0 3px;
-    font-size: 14px;
-    font-family: Noto Sans;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    outline-color: #217346;
+  min-width: 100px;
+  width: 100px;
+  min-height: 25px;
+  height: 25px;
+  border-bottom: 1px solid #a0a0a0;
+  border-right: 1px solid #a0a0a0;
+  padding: 0 3px;
+  font-size: 14px;
+  font-family: Noto Sans;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  outline-color: #217346;
 }
 
 .input-cell.selected {
-    border: 2px solid #217346;
+  border: 2px solid #217346;
 }
 
 .input-cell.top-selected {
-    border-top: none;
+  border-top: none;
 }
 
 .input-cell.bottom-selected {
-    border-bottom: 1px solid #a0a0a0;
+  border-bottom: 1px solid #a0a0a0;
 }
 
 .input-cell.left-selected {
-    border-left: none;
+  border-left: none;
 }
 
 .input-cell.right-selected {
-    border-right: 1px solid #a0a0a0;
+  border-right: 1px solid #a0a0a0;
 }
 
 .sheet-bar {
-    background-color: #efefef;
-    display: flex;
-    height: 4vh;
-    width: 100vw;
-    align-items: center;
+  background-color: #efefef;
+  display: flex;
+  height: 4vh;
+  width: 100vw;
+  align-items: center;
 }
 
 .sheet-scroller {
-    margin: 0 0.3rem;
-    display: flex;
-    align-items: center;
+  margin: 0 0.3rem;
+  display: flex;
+  align-items: center;
 }
 
 .sheet-tab-container {
-    display: flex;
-    overflow: scroll;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  display: flex;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .sheet-tab-container::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .sheet-tab {
-    display: flex;
-    justify-content: center;
-    padding: 7px 10px 0px 10px;
-    font-weight: 600;
-    height: 4vh;
-    font-size: 14px;
+  display: flex;
+  justify-content: center;
+  padding: 7px 10px 0px 10px;
+  font-weight: 600;
+  height: 4vh;
+  font-size: 14px;
 }
 
 .sheet-tab:hover {
-    background-color: #e1e1e1;
-    cursor: pointer;
+  background-color: #e1e1e1;
+  cursor: pointer;
 }
 
 .sheet-tab.selected {
-    color: #217346;
-    border-bottom: 3px solid #217346;
+  color: #217346;
+  border-bottom: 3px solid #217346;
 }
 
 .sheet-tab.selected:hover {
-    background-color: #fff;
-    cursor: default;
+  background-color: #fff;
+  cursor: default;
 }
 
 .add-sheet {
-    margin-right: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 .add-sheet:hover,
 .scroller:hover {
-    cursor: pointer;
-    transform: scale(1.1);
-    color: #217346;
+  cursor: pointer;
+  transform: scale(1.1);
+  color: #217346;
 }
 
 .sheet-options-modal {
-    position: absolute;
-    background-color: #fff;
-    box-shadow: 0 8px 16px 0 #efefef;
-    bottom: 4vh;
+  position: absolute;
+  background-color: #fff;
+  box-shadow: 0 8px 16px 0 #efefef;
+  bottom: 4vh;
 }
 
 .option {
-    padding: 7px 15px;
+  padding: 7px 15px;
 }
 
 .option:hover {
-    background-color: #e1e1e1;
-    cursor: default;
+  background-color: #e1e1e1;
+  cursor: default;
 }
 
 .scroller {
-    font-size: 30px;
-    color: #797979;
+  font-size: 30px;
+  color: #797979;
 }
 
 .sheet-modal-parent {
-    position: absolute;
-    height: 100vh;
-    width: 100vw;
-    top: 0;
-    background-color: rgba(68, 68, 68, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  position: absolute;
+  height: 100vh;
+  width: 100vw;
+  top: 0;
+  background-color: rgba(68, 68, 68, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sheet-rename-modal,
 .sheet-delete-modal {
-    background-color: #fff;
-    box-shadow: 0 8px 16px 0 #585858;
-    padding: 15px;
-    min-width: 400px;
-    width: 30vw;
+  background-color: #fff;
+  box-shadow: 0 8px 16px 0 #585858;
+  padding: 15px;
+  min-width: 400px;
+  width: 30vw;
 }
 
 .sheet-modal-title {
-    text-align: center;
-    font-size: 26px;
-    color: #217346;
-    font-weight: 600;
+  text-align: center;
+  font-size: 26px;
+  color: #217346;
+  font-weight: 600;
 }
 
 .sheet-modal-input-container,
 .sheet-modal-detail-container {
-    padding: 20px 20px 5px 20px;
+  padding: 20px 20px 5px 20px;
 }
 
 .sheet-modal-detail-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .sheet-modal-input-title,
 .sheet-modal-detail-title {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .sheet-modal-input {
-    width: 100%;
-    height: 2rem;
-    font-size: 1.2rem;
-    outline-color: #217346;
+  width: 100%;
+  height: 2rem;
+  font-size: 1.2rem;
+  outline-color: #217346;
 }
 
 .sheet-modal-confirmation {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    justify-content: space-evenly;
-    padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 15px;
 }
 
 .button {
-    border: 1px solid;
-    width: 100px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 3px;
-    font-weight: 600;
+  border: 1px solid;
+  width: 100px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  font-weight: 600;
 }
 
 .yes-button {
-    background-color: #217346;
-    color: #fff;
+  background-color: #217346;
+  color: #fff;
 }
 
 .yes-button:hover {
-    background-color: #195534;
-    cursor: pointer;
+  background-color: #195534;
+  cursor: pointer;
 }
 
 .no-button:hover {
-    background-color: #efefef;
-    cursor: pointer;
+  background-color: #efefef;
+  cursor: pointer;
 }
 
 .rename-error {
-    color: #ff0000;
-    font-size: 14px;
-    margin-top: 5px;
+  color: #ff0000;
+  font-size: 14px;
+  margin-top: 5px;
 }
 
 .file-modal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 0vw;
-    display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 0vw;
+  display: flex;
 }
 
 .file-options-modal {
-    width: 12rem;
-    background-color: #217346;
-    height: 100%;
-    color: #fff;
+  width: 12rem;
+  background-color: #217346;
+  height: 100%;
+  color: #fff;
 }
 
 .file-recent-modal {
-    background-color: #fff;
-    height: 100%;
-    width: calc(50% - 12rem);
+  background-color: #fff;
+  height: 100%;
+  width: calc(50% - 12rem);
 }
 
 .close,
 .new,
 .open,
 .save {
-    display: flex;
-    align-items: center;
-    padding: 8px 0;
-    width: 100%;
-    font-size: 16px;
-    justify-content: center;
-    font-weight: 100;
-    position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  width: 100%;
+  font-size: 16px;
+  justify-content: center;
+  font-weight: 100;
+  position: relative;
 }
 
 .close-icon,
 .new-icon,
 .open-icon,
 .save-icon {
-    position: absolute;
-    left: 2rem;
+  position: absolute;
+  left: 2rem;
 }
 
 .close {
-    margin: 5vh 0 3vh 0;
+  margin: 5vh 0 3vh 0;
 }
 
 .close-icon {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .close:hover,
 .new:hover,
 .open:hover,
 .save:hover {
-    background-color: #1e663f;
-    cursor: pointer;
+  background-color: #1e663f;
+  cursor: pointer;
 }
 
 .file-transparent {
-    width: 50%;
-    height: 100vh;
+  width: 50%;
+  height: 100vh;
 }

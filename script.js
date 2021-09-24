@@ -1,24 +1,24 @@
 //variables
 let cellData = {
-    Sheet1: {},
+  Sheet1: {},
 };
 let saved = true;
 let selectedSheet = "Sheet1";
 let totalSheets = 1;
 let lastlyAddedSheet = 1;
 let defaultProperties = {
-    "font-family": "Noto Sans",
-    "font-size": 14,
-    text: "",
-    bold: false,
-    italic: false,
-    underlined: false,
-    alignment: "left",
-    color: "#444",
-    bgcolor: "#fff",
-    formula: "",
-    upStream: [],
-    downStream: [],
+  "font-family": "Noto Sans",
+  "font-size": 14,
+  text: "",
+  bold: false,
+  italic: false,
+  underlined: false,
+  alignment: "left",
+  color: "#444",
+  bgcolor: "#fff",
+  formula: "",
+  upStream: [],
+  downStream: [],
 };
 let count = 0;
 let startcellSelected = false;
@@ -33,633 +33,667 @@ let contentCut = false;
 
 //set scroll speed
 const ps = new PerfectScrollbar("#cells", {
-    wheelSpeed: 15,
+  wheelSpeed: 15,
 });
 
 //row and column names
 for (let i = 1; i <= 100; i++) {
-    let str = "";
-    let n = i;
+  let str = "";
+  let n = i;
 
-    while (n > 0) {
-        let rem = n % 26;
+  while (n > 0) {
+    let rem = n % 26;
 
-        if (rem == 0) {
-            str = "Z" + str;
-            n = Math.floor(n / 26) - 1;
-        } else {
-            str = String.fromCharCode(rem - 1 + 65) + str;
-            n = Math.floor(n / 26);
-        }
+    if (rem === 0) {
+      str = "Z" + str;
+      n = Math.floor(n / 26) - 1;
+    } else {
+      str = String.fromCharCode(rem - 1 + 65) + str;
+      n = Math.floor(n / 26);
     }
+  }
 
-    $("#columns").append(`<div class="column-name column-${i}" id="${str}">${str}</div>`);
-    $("#rows").append(`<div class="row-name">${i}</div>`);
+  $("#columns").append(
+    `<div class="column-name column-${i}" id="${str}">${str}</div>`,
+  );
+  $("#rows").append(`<div class="row-name">${i}</div>`);
 }
 
 //adding cells to rows
 for (let i = 1; i <= 100; i++) {
-    let row = $('<div class="cell-row"></div>');
+  let row = $('<div class="cell-row"></div>');
 
-    for (let j = 1; j <= 100; j++) {
-        row.append(`<div id="row-${i}-col-${j}" class="input-cell" contenteditable="false"></div>`);
-    }
+  for (let j = 1; j <= 100; j++)
+    row.append(
+      `<div id="row-${i}-col-${j}" class="input-cell" contenteditable="false"></div>`,
+    );
 
-    $("#cells").append(row);
+  $("#cells").append(row);
 }
 
 //cell scrolling
 $("#cells").scroll(function () {
-    $("#columns").scrollLeft(this.scrollLeft);
-    $("#rows").scrollTop(this.scrollTop);
+  $("#columns").scrollLeft(this.scrollLeft);
+  $("#rows").scrollTop(this.scrollTop);
 });
 
 //editing text to cells
 $(".input-cell").dblclick(function () {
-    $(".input-cell.selected").removeClass("selected top-selected bottom-selected left-selected right-selected");
-    $(this).addClass("selected");
-    $(this).attr("contenteditable", "true");
-    $(this).focus();
+  $(".input-cell.selected").removeClass(
+    "selected top-selected bottom-selected left-selected right-selected",
+  );
+  $(this).addClass("selected");
+  $(this).attr("contenteditable", "true");
+  $(this).focus();
 });
 
 //saving text in cells
 $(".input-cell").blur(function () {
-    $(this).attr("contenteditable", "false");
-    let [rowId, colId] = getRowCol(this);
+  $(this).attr("contenteditable", "false");
+  let [rowId, colId] = getRowCol(this);
 
-    if (cellData[selectedSheet][rowId - 1][colId - 1].formula != "") {
-        updateStreams(this, []);
-    }
+  if (cellData[selectedSheet][rowId - 1][colId - 1].formula != "")
+    updateStreams(this, []);
 
-    cellData[selectedSheet][rowId - 1][colId - 1].formula = "";
-    updateCellData("text", $(this).text());
-    evalFormula($(`.column-${colId}`).attr("id") + rowId);
+  cellData[selectedSheet][rowId - 1][colId - 1].formula = "";
+  updateCellData("text", $(this).text());
+  evalFormula($(`.column-${colId}`).attr("id") + rowId);
 });
 
 //getting row and col no.
 function getRowCol(ele) {
-    let idArray = $(ele).attr("id").split("-");
-    let rowId = parseInt(idArray[1]);
-    let colId = parseInt(idArray[3]);
-    return [rowId, colId];
+  let idArray = $(ele).attr("id").split("-");
+  let rowId = parseInt(idArray[1]);
+  let colId = parseInt(idArray[3]);
+  return [rowId, colId];
 }
 
 //updates the upstream and downstream of current cells
 function updateStreams(ele, elements, update, oldUpStream) {
-    let [rowId, colId] = getRowCol(ele);
-    let selfColCode = $(`.column-${colId}`).attr("id");
+  let [rowId, colId] = getRowCol(ele);
+  let selfColCode = $(`.column-${colId}`).attr("id");
 
-    if (elements.includes(selfColCode + rowId)) {
-        return false;
+  if (elements.includes(selfColCode + rowId)) return false;
+
+  if (
+    cellData[selectedSheet][rowId - 1] &&
+    cellData[selectedSheet][rowId - 1][colId - 1]
+  ) {
+    let downStream = cellData[selectedSheet][rowId - 1][colId - 1].downStream;
+    let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
+
+    for (let i of downStream) if (elements.includes(i)) return false;
+
+    for (let i of downStream) {
+      let [calRowId, calColId] = codeToValue(i);
+      updateStreams(
+        $(`#row-${calRowId}-col-${calColId}`)[0],
+        elements,
+        true,
+        upStream,
+      );
     }
+  }
 
-    if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
-        let downStream = cellData[selectedSheet][rowId - 1][colId - 1].downStream;
-        let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
+  if (!cellData[selectedSheet][rowId - 1]) {
+    cellData[selectedSheet][rowId - 1] = {};
+    cellData[selectedSheet][rowId - 1][colId - 1] = {
+      ...defaultProperties,
+      upStream: [...elements],
+      downStream: [],
+    };
+  } else if (!cellData[selectedSheet][rowId - 1][colId - 1]) {
+    cellData[selectedSheet][rowId - 1][colId - 1] = {
+      ...defaultProperties,
+      upStream: [...elements],
+      downStream: [],
+    };
+  } else {
+    let upStream = [...cellData[selectedSheet][rowId - 1][colId - 1].upStream];
 
-        for (let i of downStream) {
-            if (elements.includes(i)) {
-                return false;
-            }
-        }
-
-        for (let i of downStream) {
-            let [calRowId, calColId] = codeToValue(i);
-            updateStreams($(`#row-${calRowId}-col-${calColId}`)[0], elements, true, upStream);
-        }
-    }
-
-    if (!cellData[selectedSheet][rowId - 1]) {
-        cellData[selectedSheet][rowId - 1] = {};
-        cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties, upStream: [...elements], downStream: [] };
-    } else if (!cellData[selectedSheet][rowId - 1][colId - 1]) {
-        cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties, upStream: [...elements], downStream: [] };
-    } else {
-        let upStream = [...cellData[selectedSheet][rowId - 1][colId - 1].upStream];
-
-        if (update) {
-            for (let i of oldUpStream) {
-                let [calRowId, calColId] = codeToValue(i);
-                let index = cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.indexOf(selfColCode + rowId);
-                cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.splice(index, 1);
-
-                if (JSON.stringify(cellData[selectedSheet][calRowId - 1][calColId - 1]) == JSON.stringify(defaultProperties)) {
-                    delete cellData[selectedSheet][calRowId - 1][calColId - 1];
-
-                    if (Object.keys(cellData[selectedSheet][calRowId - 1]).length == 0) {
-                        delete cellData[selectedSheet][calRowId - 1];
-                    }
-                }
-
-                index = cellData[selectedSheet][rowId - 1][colId - 1].upStream.indexOf(i);
-                cellData[selectedSheet][rowId - 1][colId - 1].upStream.splice(index, 1);
-            }
-
-            for (let i of elements) {
-                cellData[selectedSheet][rowId - 1][colId - 1].upStream.push(i);
-            }
-        } else {
-            for (let i of upStream) {
-                let [calRowId, calColId] = codeToValue(i);
-                let index = cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.indexOf(selfColCode + rowId);
-                cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.splice(index, 1);
-
-                if (JSON.stringify(cellData[selectedSheet][calRowId - 1][calColId - 1]) == JSON.stringify(defaultProperties)) {
-                    delete cellData[selectedSheet][calRowId - 1][calColId - 1];
-
-                    if (Object.keys(cellData[selectedSheet][calRowId - 1]).length == 0) {
-                        delete cellData[selectedSheet][calRowId - 1];
-                    }
-                }
-            }
-
-            cellData[selectedSheet][rowId - 1][colId - 1].upStream = [...elements];
-        }
-    }
-
-    for (let i of elements) {
+    if (update) {
+      for (let i of oldUpStream) {
         let [calRowId, calColId] = codeToValue(i);
+        let index = cellData[selectedSheet][calRowId - 1][
+          calColId - 1
+        ].downStream.indexOf(selfColCode + rowId);
+        cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.splice(
+          index,
+          1,
+        );
 
-        if (!cellData[selectedSheet][calRowId - 1]) {
-            cellData[selectedSheet][calRowId - 1] = {};
-            cellData[selectedSheet][calRowId - 1][calColId - 1] = { ...defaultProperties, upStream: [], downStream: [selfColCode + rowId] };
-        } else if (!cellData[selectedSheet][calRowId - 1][calColId - 1]) {
-            cellData[selectedSheet][calRowId - 1][calColId - 1] = { ...defaultProperties, upStream: [], downStream: [selfColCode + rowId] };
-        } else {
-            cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.push(selfColCode + rowId);
+        if (
+          JSON.stringify(
+            cellData[selectedSheet][calRowId - 1][calColId - 1],
+          ) === JSON.stringify(defaultProperties)
+        ) {
+          delete cellData[selectedSheet][calRowId - 1][calColId - 1];
+
+          if (Object.keys(cellData[selectedSheet][calRowId - 1]).length === 0)
+            delete cellData[selectedSheet][calRowId - 1];
         }
-    }
 
-    return true;
+        index =
+          cellData[selectedSheet][rowId - 1][colId - 1].upStream.indexOf(i);
+        cellData[selectedSheet][rowId - 1][colId - 1].upStream.splice(index, 1);
+      }
+
+      for (let i of elements)
+        cellData[selectedSheet][rowId - 1][colId - 1].upStream.push(i);
+    } else {
+      for (let i of upStream) {
+        let [calRowId, calColId] = codeToValue(i);
+        let index = cellData[selectedSheet][calRowId - 1][
+          calColId - 1
+        ].downStream.indexOf(selfColCode + rowId);
+        cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.splice(
+          index,
+          1,
+        );
+
+        if (
+          JSON.stringify(
+            cellData[selectedSheet][calRowId - 1][calColId - 1],
+          ) === JSON.stringify(defaultProperties)
+        ) {
+          delete cellData[selectedSheet][calRowId - 1][calColId - 1];
+
+          if (Object.keys(cellData[selectedSheet][calRowId - 1]).length === 0)
+            delete cellData[selectedSheet][calRowId - 1];
+        }
+      }
+
+      cellData[selectedSheet][rowId - 1][colId - 1].upStream = [...elements];
+    }
+  }
+
+  for (let i of elements) {
+    let [calRowId, calColId] = codeToValue(i);
+
+    if (!cellData[selectedSheet][calRowId - 1]) {
+      cellData[selectedSheet][calRowId - 1] = {};
+      cellData[selectedSheet][calRowId - 1][calColId - 1] = {
+        ...defaultProperties,
+        upStream: [],
+        downStream: [selfColCode + rowId],
+      };
+    } else if (!cellData[selectedSheet][calRowId - 1][calColId - 1]) {
+      cellData[selectedSheet][calRowId - 1][calColId - 1] = {
+        ...defaultProperties,
+        upStream: [],
+        downStream: [selfColCode + rowId],
+      };
+    } else
+      cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.push(
+        selfColCode + rowId,
+      );
+  }
+
+  return true;
 }
 
 //gets the row and column number written in formula input box
 function codeToValue(code) {
-    let colCode = "";
-    let rowCode = "";
+  let colCode = "";
+  let rowCode = "";
 
-    for (let i = 0; i < code.length; i++) {
-        if (!isNaN(code.charAt(i))) {
-            rowCode += code.charAt(i);
-        } else {
-            colCode += code.charAt(i);
-        }
-    }
+  for (let i = 0; i < code.length; i++) {
+    if (!isNaN(code.charAt(i))) rowCode += code.charAt(i);
+    else colCode += code.charAt(i);
+  }
 
-    let colId = parseInt($(`#${colCode}`).attr("class").split(" ")[1].split("-")[1]);
-    let rowId = parseInt(rowCode);
-    return [rowId, colId];
+  let colId = parseInt(
+    $(`#${colCode}`).attr("class").split(" ")[1].split("-")[1],
+  );
+  let rowId = parseInt(rowCode);
+  return [rowId, colId];
 }
 
 //update cells data in object cellData
 function updateCellData(property, value) {
-    let currCellData = JSON.stringify(cellData);
+  let currCellData = JSON.stringify(cellData);
 
-    if (value != defaultProperties[property]) {
-        $(".input-cell.selected").each(function (index, data) {
-            let [rowId, colId] = getRowCol(data);
+  if (value != defaultProperties[property]) {
+    $(".input-cell.selected").each(function (index, data) {
+      let [rowId, colId] = getRowCol(data);
 
-            if (cellData[selectedSheet][rowId - 1] == undefined) {
-                cellData[selectedSheet][rowId - 1] = {};
-                cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties, upStream: [], downStream: [] };
-                cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
-            } else {
-                if (cellData[selectedSheet][rowId - 1][colId - 1] == undefined) {
-                    cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties, upStream: [], downStream: [] };
-                    cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
-                } else {
-                    cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
-                }
-            }
-        });
-    } else {
-        $(".input-cell.selected").each(function (index, data) {
-            let [rowId, colId] = getRowCol(data);
+      if (cellData[selectedSheet][rowId - 1] === undefined) {
+        cellData[selectedSheet][rowId - 1] = {};
+        cellData[selectedSheet][rowId - 1][colId - 1] = {
+          ...defaultProperties,
+          upStream: [],
+          downStream: [],
+        };
+        cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+      } else {
+        if (cellData[selectedSheet][rowId - 1][colId - 1] === undefined) {
+          cellData[selectedSheet][rowId - 1][colId - 1] = {
+            ...defaultProperties,
+            upStream: [],
+            downStream: [],
+          };
+          cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+        } else cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+      }
+    });
+  } else {
+    $(".input-cell.selected").each(function (index, data) {
+      let [rowId, colId] = getRowCol(data);
 
-            if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
-                cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+      if (
+        cellData[selectedSheet][rowId - 1] &&
+        cellData[selectedSheet][rowId - 1][colId - 1]
+      ) {
+        cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
 
-                if (JSON.stringify(cellData[selectedSheet][rowId - 1][colId - 1]) == JSON.stringify(defaultProperties)) {
-                    delete cellData[selectedSheet][rowId - 1][colId - 1];
+        if (
+          JSON.stringify(cellData[selectedSheet][rowId - 1][colId - 1]) ===
+          JSON.stringify(defaultProperties)
+        ) {
+          delete cellData[selectedSheet][rowId - 1][colId - 1];
 
-                    if (Object.keys(cellData[selectedSheet][rowId - 1]).length == 0) {
-                        delete cellData[selectedSheet][rowId - 1];
-                    }
-                }
-            }
-        });
-    }
+          if (Object.keys(cellData[selectedSheet][rowId - 1]).length === 0)
+            delete cellData[selectedSheet][rowId - 1];
+        }
+      }
+    });
+  }
 
-    if (saved && currCellData != JSON.stringify(cellData)) {
-        saved = false;
-    }
+  if (saved && currCellData != JSON.stringify(cellData)) saved = false;
 }
 
 //evaluates the value of the expression in formula input box
 function evalFormula(cell) {
-    let [rowId, colId] = codeToValue(cell);
-    let formula = cellData[selectedSheet][rowId - 1][colId - 1].formula;
+  let [rowId, colId] = codeToValue(cell);
+  let formula = cellData[selectedSheet][rowId - 1][colId - 1].formula;
 
-    if (formula != "") {
-        let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
-        let upStreamValue = [];
+  if (formula != "") {
+    let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
+    let upStreamValue = [];
 
-        for (let i in upStream) {
-            let [calRowId, calColId] = codeToValue(upStream[i]);
-            let value;
+    for (let i in upStream) {
+      let [calRowId, calColId] = codeToValue(upStream[i]);
+      let value;
 
-            if (cellData[selectedSheet][calRowId - 1][calColId - 1].text == "") {
-                value = "0";
-            } else {
-                value = cellData[selectedSheet][calRowId - 1][calColId - 1].text;
-            }
+      if (cellData[selectedSheet][calRowId - 1][calColId - 1].text === "")
+        value = "0";
+      else value = cellData[selectedSheet][calRowId - 1][calColId - 1].text;
 
-            upStreamValue.push(value);
-            formula = formula.replace(upStream[i], upStreamValue[i]);
-        }
-
-        cellData[selectedSheet][rowId - 1][colId - 1].text = eval(formula);
-        loadCurrentSheet();
+      upStreamValue.push(value);
+      formula = formula.replace(upStream[i], upStreamValue[i]);
     }
 
-    let downStream = cellData[selectedSheet][rowId - 1][colId - 1].downStream;
+    cellData[selectedSheet][rowId - 1][colId - 1].text = eval(formula);
+    loadCurrentSheet();
+  }
 
-    for (let i = downStream.length - 1; i >= 0; i--) {
-        evalFormula(downStream[i]);
-    }
+  let downStream = cellData[selectedSheet][rowId - 1][colId - 1].downStream;
+
+  for (let i = downStream.length - 1; i >= 0; i--) evalFormula(downStream[i]);
 }
 
 //loads specified sheet
 function loadCurrentSheet() {
-    let data = cellData[selectedSheet];
-    let rowKeys = Object.keys(data);
+  let data = cellData[selectedSheet];
+  let rowKeys = Object.keys(data);
 
-    for (let i of rowKeys) {
-        let rowId = parseInt(i);
-        let colKeys = Object.keys(data[rowId]);
+  for (let i of rowKeys) {
+    let rowId = parseInt(i);
+    let colKeys = Object.keys(data[rowId]);
 
-        for (let j of colKeys) {
-            let colId = parseInt(j);
-            let cell = $(`#row-${rowId + 1}-col-${colId + 1}`);
-            cell.text(data[rowId][colId].text);
-            cell.css({
-                "font-family": data[rowId][colId]["font-family"],
-                "font-size": data[rowId][colId]["font-size"],
-                "background-color": data[rowId][colId]["bgcolor"],
-                color: data[rowId][colId].color,
-                "font-weight": data[rowId][colId].bold ? "bold" : "",
-                "font-style": data[rowId][colId].italic ? "italic" : "",
-                "text-decoration": data[rowId][colId].underlined ? "underlined" : "",
-                "text-align": data[rowId][colId].alignment,
-            });
-        }
+    for (let j of colKeys) {
+      let colId = parseInt(j);
+      let cell = $(`#row-${rowId + 1}-col-${colId + 1}`);
+      cell.text(data[rowId][colId].text);
+      cell.css({
+        "font-family": data[rowId][colId]["font-family"],
+        "font-size": data[rowId][colId]["font-size"],
+        "background-color": data[rowId][colId]["bgcolor"],
+        color: data[rowId][colId].color,
+        "font-weight": data[rowId][colId].bold ? "bold" : "",
+        "font-style": data[rowId][colId].italic ? "italic" : "",
+        "text-decoration": data[rowId][colId].underlined ? "underlined" : "",
+        "text-align": data[rowId][colId].alignment,
+      });
     }
+  }
 }
 
 //selecting cells(multiple)
 $(".input-cell").click(function (e) {
-    let [rowId, colId] = getRowCol(this);
-    let [topCell, bottomCell, leftCell, rightCell] = getNearbyCells(rowId, colId);
+  let [rowId, colId] = getRowCol(this);
+  let [topCell, bottomCell, leftCell, rightCell] = getNearbyCells(rowId, colId);
 
-    if ($(this).hasClass("selected") && e.ctrlKey) {
-        unselectCell(this, topCell, bottomCell, leftCell, rightCell);
-    } else {
-        selectCell(this, e, topCell, bottomCell, leftCell, rightCell);
-    }
+  if ($(this).hasClass("selected") && e.ctrlKey)
+    unselectCell(this, topCell, bottomCell, leftCell, rightCell);
+  else selectCell(this, e, topCell, bottomCell, leftCell, rightCell);
 });
 
 //getting nearby cells
 function getNearbyCells(rowId, colId) {
-    let topCell = $(`#row-${rowId - 1}-col-${colId}`);
-    let bottomCell = $(`#row-${rowId + 1}-col-${colId}`);
-    let leftCell = $(`#row-${rowId}-col-${colId - 1}`);
-    let rightCell = $(`#row-${rowId}-col-${colId + 1}`);
-    return [topCell, bottomCell, leftCell, rightCell];
+  let topCell = $(`#row-${rowId - 1}-col-${colId}`);
+  let bottomCell = $(`#row-${rowId + 1}-col-${colId}`);
+  let leftCell = $(`#row-${rowId}-col-${colId - 1}`);
+  let rightCell = $(`#row-${rowId}-col-${colId + 1}`);
+  return [topCell, bottomCell, leftCell, rightCell];
 }
 
 //unselecting cells
 function unselectCell(ele, topCell, bottomCell, leftCell, rightCell) {
-    if ($(ele).attr("contenteditable") == "false") {
-        if ($(ele).hasClass("top-selected")) {
-            topCell.removeClass("bottom-selected");
-        }
+  if ($(ele).attr("contenteditable") === "false") {
+    if ($(ele).hasClass("top-selected")) topCell.removeClass("bottom-selected");
 
-        if ($(ele).hasClass("bottom-selected")) {
-            bottomCell.removeClass("top-selected");
-        }
+    if ($(ele).hasClass("bottom-selected"))
+      bottomCell.removeClass("top-selected");
 
-        if ($(ele).hasClass("left-selected")) {
-            leftCell.removeClass("right-selected");
-        }
+    if ($(ele).hasClass("left-selected"))
+      leftCell.removeClass("right-selected");
 
-        if ($(ele).hasClass("right-selected")) {
-            rightCell.removeClass("left-selected");
-        }
+    if ($(ele).hasClass("right-selected"))
+      rightCell.removeClass("left-selected");
 
-        $(ele).removeClass("selected top-selected bottom-selected left-selected right-selected");
-    }
+    $(ele).removeClass(
+      "selected top-selected bottom-selected left-selected right-selected",
+    );
+  }
 }
 
 //selecting cells
 function selectCell(ele, e, topCell, bottomCell, leftCell, rightCell) {
-    if (e.ctrlKey) {
-        let topSelected, bottomSelected, leftSelected, rightSelected;
+  if (e.ctrlKey) {
+    let topSelected, bottomSelected, leftSelected, rightSelected;
 
-        if (topCell) {
-            topSelected = topCell.hasClass("selected");
-        }
+    if (topCell) topSelected = topCell.hasClass("selected");
 
-        if (bottomCell) {
-            bottomSelected = bottomCell.hasClass("selected");
-        }
+    if (bottomCell) bottomSelected = bottomCell.hasClass("selected");
 
-        if (leftCell) {
-            leftSelected = leftCell.hasClass("selected");
-        }
+    if (leftCell) leftSelected = leftCell.hasClass("selected");
 
-        if (rightCell) {
-            rightSelected = rightCell.hasClass("selected");
-        }
+    if (rightCell) rightSelected = rightCell.hasClass("selected");
 
-        if (topSelected) {
-            $(ele).addClass("top-selected");
-            topCell.addClass("bottom-selected");
-        }
-
-        if (bottomSelected) {
-            $(ele).addClass("bottom-selected");
-            bottomCell.addClass("top-selected");
-        }
-
-        if (leftSelected) {
-            $(ele).addClass("left-selected");
-            leftCell.addClass("right-selected");
-        }
-
-        if (rightSelected) {
-            $(ele).addClass("right-selected");
-            rightCell.addClass("left-selected");
-        }
-    } else {
-        $(".input-cell.selected").removeClass("selected top-selected bottom-selected left-selected right-selected");
+    if (topSelected) {
+      $(ele).addClass("top-selected");
+      topCell.addClass("bottom-selected");
     }
 
-    $(ele).addClass("selected");
-    changeHeader(getRowCol(ele));
+    if (bottomSelected) {
+      $(ele).addClass("bottom-selected");
+      bottomCell.addClass("top-selected");
+    }
+
+    if (leftSelected) {
+      $(ele).addClass("left-selected");
+      leftCell.addClass("right-selected");
+    }
+
+    if (rightSelected) {
+      $(ele).addClass("right-selected");
+      rightCell.addClass("left-selected");
+    }
+  } else
+    $(".input-cell.selected").removeClass(
+      "selected top-selected bottom-selected left-selected right-selected",
+    );
+
+  $(ele).addClass("selected");
+  changeHeader(getRowCol(ele));
 }
 
 //updating menu-icons
 function changeHeader([rowId, colId]) {
-    let data;
+  let data;
 
-    if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
-        data = cellData[selectedSheet][rowId - 1][colId - 1];
-    } else {
-        data = defaultProperties;
-    }
+  if (
+    cellData[selectedSheet][rowId - 1] &&
+    cellData[selectedSheet][rowId - 1][colId - 1]
+  )
+    data = cellData[selectedSheet][rowId - 1][colId - 1];
+  else data = defaultProperties;
 
-    $(".alignment.selected").removeClass("selected");
-    $(`.alignment[data-type=${data.alignment}]`).addClass("selected");
-    selectUnselectStyle(data, "bold");
-    selectUnselectStyle(data, "italic");
-    selectUnselectStyle(data, "underlined");
-    $("#fill-color").css("border-bottom", `4px solid ${data.bgcolor}`);
-    $("#text-color").css("border-bottom", `4px solid ${data.color}`);
-    $("#font-family").val(data["font-family"]);
-    $("#font-size").val(data["font-size"]);
-    $("#font-family").css("font-family", data["font-family"]);
-    $("#formula-input").text(data.formula);
+  $(".alignment.selected").removeClass("selected");
+  $(`.alignment[data-type=${data.alignment}]`).addClass("selected");
+  selectUnselectStyle(data, "bold");
+  selectUnselectStyle(data, "italic");
+  selectUnselectStyle(data, "underlined");
+  $("#fill-color").css("border-bottom", `4px solid ${data.bgcolor}`);
+  $("#text-color").css("border-bottom", `4px solid ${data.color}`);
+  $("#font-family").val(data["font-family"]);
+  $("#font-size").val(data["font-size"]);
+  $("#font-family").css("font-family", data["font-family"]);
+  $("#formula-input").text(data.formula);
 }
 
 //selects and unselects a cell's properties
 function selectUnselectStyle(data, property) {
-    if (data[property]) {
-        $(`#${property}`).addClass("selected");
-    } else {
-        $(`#${property}`).removeClass("selected");
-    }
+  if (data[property]) $(`#${property}`).addClass("selected");
+  else $(`#${property}`).removeClass("selected");
 }
 
 //drag selecting cells(multiple)
 $(".input-cell").mousemove(function (e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (e.buttons == 1) {
-        if (e.pageX > $(window).width() - 10 && !scrollXRStarted) {
-            scrollXR();
-        } else if (e.pageX < 10 && !scrollXLStarted) {
-            scrollXL();
-        }
+  if (e.buttons === 1) {
+    if (e.pageX > $(window).width() - 10 && !scrollXRStarted) scrollXR();
+    else if (e.pageX < 10 && !scrollXLStarted) scrollXL();
 
-        if (!startcellSelected) {
-            let [rowId, colId] = getRowCol(this);
-            startCell = { rowId: rowId, colId: colId };
-            selectAllCells(startCell, startCell);
-            startcellSelected = true;
-            $(".input-cell.selected").attr("contenteditable", "false");
-        }
-    } else {
-        startcellSelected = false;
+    if (!startcellSelected) {
+      let [rowId, colId] = getRowCol(this);
+      startCell = { rowId: rowId, colId: colId };
+      selectAllCells(startCell, startCell);
+      startcellSelected = true;
+      $(".input-cell.selected").attr("contenteditable", "false");
     }
+  } else startcellSelected = false;
 });
 
 //scrolls right
 function scrollXR() {
-    scrollXRStarted = true;
-    scrollXRInterval = setInterval(() => {
-        $("#cells").scrollLeft($("#cells").scrollLeft() + 100);
-    }, 100);
+  scrollXRStarted = true;
+  scrollXRInterval = setInterval(() => {
+    $("#cells").scrollLeft($("#cells").scrollLeft() + 100);
+  }, 100);
 }
 
 //scrolls left
 function scrollXL() {
-    scrollXLStarted = true;
-    scrollXLInterval = setInterval(() => {
-        $("#cells").scrollLeft($("#cells").scrollLeft() - 100);
-    }, 100);
+  scrollXLStarted = true;
+  scrollXLInterval = setInterval(() => {
+    $("#cells").scrollLeft($("#cells").scrollLeft() - 100);
+  }, 100);
 }
 
 //selects all cells between the specified cells
 function selectAllCells(start, end) {
-    $(".input-cell.selected").removeClass("selected top-selected bottom-selected left-selected right-selected");
+  $(".input-cell.selected").removeClass(
+    "selected top-selected bottom-selected left-selected right-selected",
+  );
 
-    for (let i = Math.min(start.rowId, end.rowId); i <= Math.max(start.rowId, end.rowId); i++) {
-        for (let j = Math.min(start.colId, end.colId); j <= Math.max(start.colId, end.colId); j++) {
-            let [topCell, bottomCell, leftCell, rightCell] = getNearbyCells(i, j);
-            selectCell($(`#row-${i}-col-${j}`)[0], { ctrlKey: true }, topCell, bottomCell, leftCell, rightCell);
-        }
+  for (
+    let i = Math.min(start.rowId, end.rowId);
+    i <= Math.max(start.rowId, end.rowId);
+    i++
+  ) {
+    for (
+      let j = Math.min(start.colId, end.colId);
+      j <= Math.max(start.colId, end.colId);
+      j++
+    ) {
+      let [topCell, bottomCell, leftCell, rightCell] = getNearbyCells(i, j);
+      selectCell(
+        $(`#row-${i}-col-${j}`)[0],
+        { ctrlKey: true },
+        topCell,
+        bottomCell,
+        leftCell,
+        rightCell,
+      );
     }
+  }
 }
 
 //drag selecting multiple cells
 $(".input-cell").mouseenter(function (e) {
-    if (e.buttons == 1) {
-        if (e.pageX < $(window).width() - 10 && scrollXRStarted) {
-            clearInterval(scrollXRInterval);
-            scrollXRStarted = false;
-        }
-
-        if (e.pageX > 10 && scrollXLStarted) {
-            clearInterval(scrollXLInterval);
-            scrollXLStarted = false;
-        }
-
-        let [rowId, colId] = getRowCol(this);
-        endCell = { rowId: rowId, colId: colId };
-        selectAllCells(startCell, endCell);
+  if (e.buttons === 1) {
+    if (e.pageX < $(window).width() - 10 && scrollXRStarted) {
+      clearInterval(scrollXRInterval);
+      scrollXRStarted = false;
     }
+
+    if (e.pageX > 10 && scrollXLStarted) {
+      clearInterval(scrollXLInterval);
+      scrollXLStarted = false;
+    }
+
+    let [rowId, colId] = getRowCol(this);
+    endCell = { rowId: rowId, colId: colId };
+    selectAllCells(startCell, endCell);
+  }
 });
 
 $(".data-container").mousemove(function (e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (e.buttons == 1) {
-        if (e.pageX > $(window).width() - 10 && !scrollXRStarted) {
-            scrollXR();
-        } else if (e.pageX < 10 && !scrollXLStarted) {
-            scrollXL();
-        }
-    }
+  if (e.buttons === 1) {
+    if (e.pageX > $(window).width() - 10 && !scrollXRStarted) scrollXR();
+    else if (e.pageX < 10 && !scrollXLStarted) scrollXL();
+  }
 });
 
 $(".data-container").mouseup(function () {
-    clearInterval(scrollXRInterval);
-    clearInterval(scrollXLInterval);
-    scrollXRStarted = false;
-    scrollXLStarted = false;
+  clearInterval(scrollXRInterval);
+  clearInterval(scrollXLInterval);
+  scrollXRStarted = false;
+  scrollXLStarted = false;
 });
 
 //updating alignment and cell data
 $(".alignment").click(function () {
-    let alignment = $(this).attr("data-type");
-    $(".alignment.selected").removeClass("selected");
-    $(this).addClass("selected");
-    $(".input-cell.selected").css("text-align", alignment);
-    updateCellData("alignment", alignment);
+  let alignment = $(this).attr("data-type");
+  $(".alignment.selected").removeClass("selected");
+  $(this).addClass("selected");
+  $(".input-cell.selected").css("text-align", alignment);
+  updateCellData("alignment", alignment);
 });
 
 //setting styles to cells
 $("#bold").click(function () {
-    setStyle(this, "bold", "font-weight", "bold");
+  setStyle(this, "bold", "font-weight", "bold");
 });
 
 $("#italic").click(function () {
-    setStyle(this, "italic", "font-style", "italic");
+  setStyle(this, "italic", "font-style", "italic");
 });
 
 $("#underlined").click(function () {
-    setStyle(this, "underlined", "text-decoration", "underlined");
+  setStyle(this, "underlined", "text-decoration", "underlined");
 });
 
 function setStyle(ele, property, key, value) {
-    if ($(ele).hasClass("selected")) {
-        $(ele).removeClass("selected");
-        $(".input-cell.selected").css(key, "");
-        updateCellData(property, false);
-    } else {
-        $(ele).addClass("selected");
-        $(".input-cell.selected").css(key, value);
-        updateCellData(property, true);
-    }
+  if ($(ele).hasClass("selected")) {
+    $(ele).removeClass("selected");
+    $(".input-cell.selected").css(key, "");
+    updateCellData(property, false);
+  } else {
+    $(ele).addClass("selected");
+    $(".input-cell.selected").css(key, value);
+    updateCellData(property, true);
+  }
 }
 
 //color picking pallete
 $(".pick-color").colorPick({
-    initialColor: "#abcd",
-    allowRecent: true,
-    recentMax: 5,
-    allowCustomColor: true,
-    palette: [
-        "#1abc9c",
-        "#16a085",
-        "#2ecc71",
-        "#27ae60",
-        "#3498db",
-        "#2980b9",
-        "#9b59b6",
-        "#8e44ad",
-        "#34495e",
-        "#2c3e50",
-        "#f1c40f",
-        "#f39c12",
-        "#e67e22",
-        "#d35400",
-        "#e74c3c",
-        "#c0392b",
-        "#ecf0f1",
-        "#bdc3c7",
-        "#95a5a6",
-        "#7f8c8d",
-    ],
+  initialColor: "#abcd",
+  allowRecent: true,
+  recentMax: 5,
+  allowCustomColor: true,
+  palette: [
+    "#1abc9c",
+    "#16a085",
+    "#2ecc71",
+    "#27ae60",
+    "#3498db",
+    "#2980b9",
+    "#9b59b6",
+    "#8e44ad",
+    "#34495e",
+    "#2c3e50",
+    "#f1c40f",
+    "#f39c12",
+    "#e67e22",
+    "#d35400",
+    "#e74c3c",
+    "#c0392b",
+    "#ecf0f1",
+    "#bdc3c7",
+    "#95a5a6",
+    "#7f8c8d",
+  ],
 
-    onColorSelected: function () {
-        if (this.color != "#444") {
-            if ($(this.element.children()[1]).attr("id") == "fill-color") {
-                $(".input-cell.selected").css("background-color", this.color);
-                $("#fill-color").css("border-bottom", `4px solid ${this.color}`);
-                updateCellData("bgcolor", this.color);
-            }
+  onColorSelected: function () {
+    if (this.color != "#444") {
+      if ($(this.element.children()[1]).attr("id") === "fill-color") {
+        $(".input-cell.selected").css("background-color", this.color);
+        $("#fill-color").css("border-bottom", `4px solid ${this.color}`);
+        updateCellData("bgcolor", this.color);
+      }
 
-            if ($(this.element.children()[1]).attr("id") == "text-color") {
-                $(".input-cell.selected").css("color", this.color);
-                $("#text-color").css("border-bottom", `4px solid ${this.color}`);
-                updateCellData("color", this.color);
-            }
-        }
-    },
+      if ($(this.element.children()[1]).attr("id") === "text-color") {
+        $(".input-cell.selected").css("color", this.color);
+        $("#text-color").css("border-bottom", `4px solid ${this.color}`);
+        updateCellData("color", this.color);
+      }
+    }
+  },
 });
 
 //changing background color and text color to cells
 $("#fill-color").click(function () {
-    setTimeout(() => {
-        $(this).parent().click();
-    }, 10);
+  setTimeout(() => {
+    $(this).parent().click();
+  }, 10);
 });
 
 $("#text-color").click(function () {
-    setTimeout(() => {
-        $(this).parent().click();
-    }, 10);
+  setTimeout(() => {
+    $(this).parent().click();
+  }, 10);
 });
 
 //changing menu selectors
 $(".menu-selector").change(function () {
-    let value = $(this).val();
-    let key = $(this).attr("id");
+  let value = $(this).val();
+  let key = $(this).attr("id");
 
-    if (key == "font-family") {
-        $("#font-family").css(key, value);
-    }
+  if (key === "font-family") $("#font-family").css(key, value);
 
-    if (!isNaN(value)) {
-        value = parseInt(value);
-    }
+  if (!isNaN(value)) value = parseInt(value);
 
-    $(".input-cell.selected").css(key, value);
-    updateCellData(key, value);
+  $(".input-cell.selected").css(key, value);
+  updateCellData(key, value);
 });
 
 $(".container").click(function () {
-    $(".sheet-options-modal").remove();
+  $(".sheet-options-modal").remove();
 });
 
 addSheetEvents();
 
 //adds event listeners to sheets
 function addSheetEvents() {
-    $(".sheet-tab.selected").on("contextmenu", function (e) {
-        e.preventDefault();
-        selectSheet(this);
-        $(".sheet-options-modal").remove();
-        let modal = $(`<div class="sheet-options-modal">
+  $(".sheet-tab.selected").on("contextmenu", function (e) {
+    e.preventDefault();
+    selectSheet(this);
+    $(".sheet-options-modal").remove();
+    let modal = $(`<div class="sheet-options-modal">
                         <div class="option sheet-rename">Rename</div>
                         <div class="option sheet-delete">Delete</div>
                     </div>`);
-        modal.css({ left: e.pageX });
-        $(".container").append(modal);
+    modal.css({ left: e.pageX });
+    $(".container").append(modal);
 
-        $(".sheet-rename").click(function () {
-            let renameModal = $(`<div class="sheet-modal-parent">
+    $(".sheet-rename").click(function () {
+      let renameModal = $(`<div class="sheet-modal-parent">
                                     <div class="sheet-rename-modal">
                                         <div class="sheet-modal-title">Rename Sheet</div>
                                         <div class="sheet-modal-input-container">
@@ -672,27 +706,26 @@ function addSheetEvents() {
                                         </div>
                                     </div>
                                 </div>`);
-            $(".container").append(renameModal);
-            $(".sheet-modal-input").focus();
 
-            $(".no-button").click(function () {
-                $(".sheet-modal-parent").remove();
-            });
+      $(".container").append(renameModal);
+      $(".sheet-modal-input").focus();
 
-            $(".yes-button").click(function () {
-                renameSheet();
-            });
+      $(".no-button").click(function () {
+        $(".sheet-modal-parent").remove();
+      });
 
-            $(".sheet-modal-input").keypress(function (e) {
-                if (e.key == "Enter") {
-                    renameSheet();
-                }
-            });
-        });
+      $(".yes-button").click(function () {
+        renameSheet();
+      });
 
-        $(".sheet-delete").click(function () {
-            if (totalSheets > 1) {
-                let deleteModal = $(`<div class="sheet-modal-parent">
+      $(".sheet-modal-input").keypress(function (e) {
+        if (e.key === "Enter") renameSheet();
+      });
+    });
+
+    $(".sheet-delete").click(function () {
+      if (totalSheets > 1) {
+        let deleteModal = $(`<div class="sheet-modal-parent">
                                     <div class="sheet-delete-modal">
                                         <div class="sheet-modal-title">Delete ${selectedSheet}</div>
                                         <div class="sheet-modal-detail-container">
@@ -704,141 +737,145 @@ function addSheetEvents() {
                                         </div>
                                     </div>
                                 </div>`);
-                $(".container").append(deleteModal);
 
-                $(".no-button").click(function () {
-                    $(".sheet-modal-parent").remove();
-                });
+        $(".container").append(deleteModal);
 
-                $(".yes-button").click(function () {
-                    deleteSheet();
-                });
-            } else {
-                alert("Not possible");
-            }
+        $(".no-button").click(function () {
+          $(".sheet-modal-parent").remove();
         });
-    });
 
-    $(".sheet-tab.selected").click(function () {
-        selectSheet(this);
+        $(".yes-button").click(function () {
+          deleteSheet();
+        });
+      } else alert("Not possible");
     });
+  });
+
+  $(".sheet-tab.selected").click(function () {
+    selectSheet(this);
+  });
 }
 
 //selects the sheet specified
 function selectSheet(ele) {
-    if (ele && !$(ele).hasClass("selected")) {
-        $(".sheet-tab.selected").removeClass("selected");
-        $(ele).addClass("selected");
-    }
+  if (ele && !$(ele).hasClass("selected")) {
+    $(".sheet-tab.selected").removeClass("selected");
+    $(ele).addClass("selected");
+  }
 
-    emptyPreviousSheet();
-    selectedSheet = $(".sheet-tab.selected").text();
-    loadCurrentSheet();
-    $("#row-1-col-1").click();
+  emptyPreviousSheet();
+  selectedSheet = $(".sheet-tab.selected").text();
+  loadCurrentSheet();
+  $("#row-1-col-1").click();
 }
 
 //empties the previous sheet
 function emptyPreviousSheet() {
-    let data = cellData[selectedSheet];
-    let rowKeys = Object.keys(data);
+  let data = cellData[selectedSheet];
+  let rowKeys = Object.keys(data);
 
-    for (let i of rowKeys) {
-        let rowId = parseInt(i);
-        let colKeys = Object.keys(data[rowId]);
+  for (let i of rowKeys) {
+    let rowId = parseInt(i);
+    let colKeys = Object.keys(data[rowId]);
 
-        for (let j of colKeys) {
-            let colId = parseInt(j);
-            let cell = $(`#row-${rowId + 1}-col-${colId + 1}`);
-            cell.text("");
-            cell.css({
-                "font-family": "NotoSans",
-                "font-size": 14,
-                "background-color": "#fff",
-                color: "#444",
-                "font-weight": "",
-                "font-style": "",
-                "text-decoration": "",
-                "text-align": "left",
-            });
-        }
+    for (let j of colKeys) {
+      let colId = parseInt(j);
+      let cell = $(`#row-${rowId + 1}-col-${colId + 1}`);
+      cell.text("");
+      cell.css({
+        "font-family": "NotoSans",
+        "font-size": 14,
+        "background-color": "#fff",
+        color: "#444",
+        "font-weight": "",
+        "font-style": "",
+        "text-decoration": "",
+        "text-align": "left",
+      });
     }
+  }
 }
 
 //helps rename the sheet
 function renameSheet() {
-    let newSheetName = $(".sheet-modal-input").val();
+  let newSheetName = $(".sheet-modal-input").val();
 
-    if (newSheetName && !Object.keys(cellData).includes(newSheetName)) {
-        saved = false;
-        let newCellData = {};
+  if (newSheetName && !Object.keys(cellData).includes(newSheetName)) {
+    saved = false;
+    let newCellData = {};
 
-        for (let i of Object.keys(cellData)) {
-            if (i == selectedSheet) {
-                newCellData[newSheetName] = cellData[selectedSheet];
-            } else {
-                newCellData[i] = cellData[i];
-            }
-        }
+    for (let i of Object.keys(cellData)) {
+      if (i === selectedSheet) {
+        newCellData[newSheetName] = cellData[selectedSheet];
+      } else {
+        newCellData[i] = cellData[i];
+      }
+    }
 
-        cellData = newCellData;
-        selectedSheet = newSheetName;
-        $(".sheet-tab.selected").text(newSheetName);
-        $(".sheet-modal-parent").remove();
-    } else {
-        $(".rename-error").remove();
-        $(".sheet-modal-input-container").append(`
+    cellData = newCellData;
+    selectedSheet = newSheetName;
+    $(".sheet-tab.selected").text(newSheetName);
+    $(".sheet-modal-parent").remove();
+  } else {
+    $(".rename-error").remove();
+    $(".sheet-modal-input-container").append(`
             <div class="rename-error"> Sheet Name is not valid or Sheet already exists! </div>
         `);
-    }
+  }
 }
 
 //helps delete the sheet
 function deleteSheet() {
-    $(".sheet-modal-parent").remove();
-    let sheetIndex = Object.keys(cellData).indexOf(selectedSheet);
-    let currSelectedSheet = $(".sheet-tab.selected");
+  $(".sheet-modal-parent").remove();
+  let sheetIndex = Object.keys(cellData).indexOf(selectedSheet);
+  let currSelectedSheet = $(".sheet-tab.selected");
 
-    if (sheetIndex == 0) {
-        selectSheet(currSelectedSheet.next()[0]);
-    } else {
-        selectSheet(currSelectedSheet.prev()[0]);
-    }
+  if (sheetIndex === 0) {
+    selectSheet(currSelectedSheet.next()[0]);
+  } else {
+    selectSheet(currSelectedSheet.prev()[0]);
+  }
 
-    delete cellData[currSelectedSheet.text()];
-    currSelectedSheet.remove();
-    totalSheets--;
+  delete cellData[currSelectedSheet.text()];
+  currSelectedSheet.remove();
+  totalSheets--;
 }
 
 //used to add sheets
 $(".add-sheet").click(function () {
-    saved = false;
-    lastlyAddedSheet++;
-    totalSheets++;
-    cellData[`Sheet${lastlyAddedSheet}`] = {};
-    $(".sheet-tab.selected").removeClass("selected");
-    $(".sheet-tab-container").append(`<div class="sheet-tab selected">Sheet${lastlyAddedSheet}</div>`);
-    selectSheet();
-    addSheetEvents();
-    $(".sheet-tab.selected")[0].scrollIntoView();
+  saved = false;
+  lastlyAddedSheet++;
+  totalSheets++;
+  cellData[`Sheet${lastlyAddedSheet}`] = {};
+  $(".sheet-tab.selected").removeClass("selected");
+  $(".sheet-tab-container").append(
+    `<div class="sheet-tab selected">Sheet${lastlyAddedSheet}</div>`,
+  );
+  selectSheet();
+  addSheetEvents();
+  $(".sheet-tab.selected")[0].scrollIntoView();
 });
 
 //scrolls through the sheets, selects the next or previous sheet
 $(".left-scroller, .right-scroller").click(function () {
-    let keysArray = Object.keys(cellData);
-    let selectedSheetIndex = keysArray.indexOf(selectedSheet);
+  let keysArray = Object.keys(cellData);
+  let selectedSheetIndex = keysArray.indexOf(selectedSheet);
 
-    if (selectedSheetIndex != 0 && $(this).text() == "chevron_left") {
-        selectSheet($(".sheet-tab.selected").prev()[0]);
-    } else if (selectedSheetIndex != keysArray.length - 1 && $(this).text() == "chevron_right") {
-        selectSheet($(".sheet-tab.selected").next()[0]);
-    }
+  if (selectedSheetIndex != 0 && $(this).text() === "chevron_left") {
+    selectSheet($(".sheet-tab.selected").prev()[0]);
+  } else if (
+    selectedSheetIndex != keysArray.length - 1 &&
+    $(this).text() === "chevron_right"
+  ) {
+    selectSheet($(".sheet-tab.selected").next()[0]);
+  }
 
-    $(".sheet-tab.selected")[0].scrollIntoView();
+  $(".sheet-tab.selected")[0].scrollIntoView();
 });
 
 //creates the file menu with new, open and save options, with recent files also displayed
 $("#menu-file").click(function () {
-    let fileModal = $(`<div class="file-modal">
+  let fileModal = $(`<div class="file-modal">
                         <div class="file-options-modal">
                             <div class="close">
                                 <div class="material-icons close-icon">arrow_circle_down</div>
@@ -860,35 +897,37 @@ $("#menu-file").click(function () {
                         <div class="file-recent-modal"></div>
                         <div class="file-transparent"></div>
                     </div>`);
-    $(".container").append(fileModal);
+  $(".container").append(fileModal);
 
+  fileModal.animate(
+    {
+      width: "100vw",
+    },
+    300,
+  );
+
+  $(".close, .file-transparent, .new, .save, .open").click(function () {
     fileModal.animate(
-        {
-            width: "100vw",
-        },
-        300
+      {
+        width: "0vw",
+      },
+      300,
     );
 
-    $(".close, .file-transparent, .new, .save, .open").click(function () {
-        fileModal.animate(
-            {
-                width: "0vw",
-            },
-            300
-        );
+    setTimeout(() => {
+      fileModal.remove();
+    }, 250);
+  });
 
-        setTimeout(() => {
-            fileModal.remove();
-        }, 250);
-    });
-
-    $(".new").click(function () {
-        if (saved) {
-            newFile();
-        } else {
-            $(".container").append(`<div class="sheet-modal-parent">
+  $(".new").click(function () {
+    if (saved) {
+      newFile();
+    } else {
+      $(".container").append(`<div class="sheet-modal-parent">
                                         <div class="sheet-delete-modal">
-                                            <div class="sheet-modal-title">${$(".title").text()}</div>
+                                            <div class="sheet-modal-title">${$(
+                                              ".title",
+                                            ).text()}</div>
                                             <div class="sheet-modal-detail-container">
                                                 <span class="sheet-modal-detail-title">Do you want to save changes?</span>
                                             </div>
@@ -901,51 +940,55 @@ $("#menu-file").click(function () {
                                         </div>
                                     </div>`);
 
-            $(".yes-button").click(function () {
-                $(".sheet-modal-parent").remove();
-                saveFile(true);
-            });
+      $(".yes-button").click(function () {
+        $(".sheet-modal-parent").remove();
+        saveFile(true);
+      });
 
-            $(".no-button, .yes-button").click(function () {
-                $(".sheet-modal-parent").remove();
-                newFile();
-            });
-        }
-    });
+      $(".no-button, .yes-button").click(function () {
+        $(".sheet-modal-parent").remove();
+        newFile();
+      });
+    }
+  });
 
-    $(".save").click(function () {
-        if (!saved) {
-            saveFile();
-        }
-    });
+  $(".save").click(function () {
+    if (!saved) {
+      saveFile();
+    }
+  });
 
-    $(".open").click(function () {
-        openFile();
-    });
+  $(".open").click(function () {
+    openFile();
+  });
 });
 
 //creates a new file
 function newFile() {
-    emptyPreviousSheet();
-    cellData = { Sheet1: {} };
-    $(".sheet-tab").remove();
-    $(".sheet-tab-container").append(`<div class="sheet-tab selected">Sheet1</div>`);
-    addSheetEvents();
-    selectedSheet = "Sheet1";
-    totalSheets = 1;
-    lastlyAddedSheet = 1;
-    $(".title").text("Excel - Book");
-    $("#row-1-col-1").click();
+  emptyPreviousSheet();
+  cellData = { Sheet1: {} };
+  $(".sheet-tab").remove();
+  $(".sheet-tab-container").append(
+    `<div class="sheet-tab selected">Sheet1</div>`,
+  );
+  addSheetEvents();
+  selectedSheet = "Sheet1";
+  totalSheets = 1;
+  lastlyAddedSheet = 1;
+  $(".title").text("Excel - Book");
+  $("#row-1-col-1").click();
 }
 
 //saves the current file to the local directory
 function saveFile(newClicked) {
-    $(".container").append(`<div class="sheet-modal-parent">
+  $(".container").append(`<div class="sheet-modal-parent">
                                 <div class="sheet-rename-modal">
                                     <div class="sheet-modal-title">Save File</div>
                                     <div class="sheet-modal-input-container">
                                         <span class="sheet-modal-input-title">File Name:</span>
-                                        <input class="sheet-modal-input" value="${$(".title").text()}" type="text" />
+                                        <input class="sheet-modal-input" value="${$(
+                                          ".title",
+                                        ).text()}" type="text" />
                                     </div>
                                     <div class="sheet-modal-confirmation">
                                         <div class="button yes-button">Save</div>
@@ -954,162 +997,173 @@ function saveFile(newClicked) {
                                 </div>
                             </div>`);
 
-    $(".yes-button").click(function () {
-        $(".title").text($(".sheet-modal-input").val());
-        let a = document.createElement("a");
-        a.href = `data:application/json, ${encodeURIComponent(JSON.stringify(cellData))}`;
-        a.download = $(".title").text() + ".json";
-        $(".container").append(a);
-        a.click();
-        a.remove();
-        saved = true;
-    });
+  $(".yes-button").click(function () {
+    $(".title").text($(".sheet-modal-input").val());
+    let a = document.createElement("a");
+    a.href = `data:application/json, ${encodeURIComponent(
+      JSON.stringify(cellData),
+    )}`;
+    a.download = $(".title").text() + ".json";
+    $(".container").append(a);
+    a.click();
+    a.remove();
+    saved = true;
+  });
 
-    $(".no-button, .yes-button").click(function () {
-        $(".sheet-modal-parent").remove();
+  $(".no-button, .yes-button").click(function () {
+    $(".sheet-modal-parent").remove();
 
-        if (newClicked) {
-            newFile();
-        }
-    });
+    if (newClicked) {
+      newFile();
+    }
+  });
 }
 
 //opens the file selected
 function openFile() {
-    let inputFile = $(`<input type="file" />`);
-    $(".container").append(inputFile);
-    inputFile.click();
+  let inputFile = $(`<input type="file" />`);
+  $(".container").append(inputFile);
+  inputFile.click();
 
-    inputFile.change(function (e) {
-        let file = e.target.files[0];
-        $(".title").text(file.name.split(".json")[0]);
-        let reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = () => {
-            emptyPreviousSheet();
-            $(".sheet-tab").remove();
-            cellData = JSON.parse(reader.result);
-            let sheets = Object.keys(cellData);
+  inputFile.change(function (e) {
+    let file = e.target.files[0];
+    $(".title").text(file.name.split(".json")[0]);
+    let reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = () => {
+      emptyPreviousSheet();
+      $(".sheet-tab").remove();
+      cellData = JSON.parse(reader.result);
+      let sheets = Object.keys(cellData);
 
-            for (let i of sheets) {
-                if (i.includes("Sheet")) {
-                    let splitSheetArray = i.split("Sheet");
+      for (let i of sheets) {
+        if (i.includes("Sheet")) {
+          let splitSheetArray = i.split("Sheet");
 
-                    if (splitSheetArray == 2 && !isNaN(splitSheetArray[1])) {
-                        lastlyAddedSheet = parseInt(splitSheetArray[1]);
-                    }
-                }
-                $(".sheet-tab-container").append(`<div class="sheet-tab selected">${i}</div>`);
-            }
+          if (splitSheetArray === 2 && !isNaN(splitSheetArray[1])) {
+            lastlyAddedSheet = parseInt(splitSheetArray[1]);
+          }
+        }
+        $(".sheet-tab-container").append(
+          `<div class="sheet-tab selected">${i}</div>`,
+        );
+      }
 
-            addSheetEvents();
-            $(".sheet-tab").removeClass("selected");
-            $($(".sheet-tab")[0]).addClass("selected");
-            selectedSheet = sheets[0];
-            totalSheets = sheets.length;
-            loadCurrentSheet();
-            inputFile.remove();
-        };
-    });
+      addSheetEvents();
+      $(".sheet-tab").removeClass("selected");
+      $($(".sheet-tab")[0]).addClass("selected");
+      selectedSheet = sheets[0];
+      totalSheets = sheets.length;
+      loadCurrentSheet();
+      inputFile.remove();
+    };
+  });
 }
 
 //used cut, copy contents of selected cells
 $("#copy, #cut").click(function () {
-    if ($(this).text() == "content_cut") {
-        contentCut = true;
+  if ($(this).text() === "content_cut") {
+    contentCut = true;
+  }
+
+  clipboard = { startCell: [], cellData: {} };
+  clipboard.startCell = getRowCol($(".input-cell.selected")[0]);
+
+  $(".input-cell.selected").each(function (index, data) {
+    let [rowId, colId] = getRowCol(data);
+
+    if (
+      cellData[selectedSheet][rowId - 1] &&
+      cellData[selectedSheet][rowId - 1][colId - 1]
+    ) {
+      if (!clipboard.cellData[rowId]) {
+        clipboard.cellData[rowId] = {};
+      }
+
+      clipboard.cellData[rowId][colId] = {
+        ...cellData[selectedSheet][rowId - 1][colId - 1],
+      };
     }
-
-    clipboard = { startCell: [], cellData: {} };
-    clipboard.startCell = getRowCol($(".input-cell.selected")[0]);
-
-    $(".input-cell.selected").each(function (index, data) {
-        let [rowId, colId] = getRowCol(data);
-
-        if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
-            if (!clipboard.cellData[rowId]) {
-                clipboard.cellData[rowId] = {};
-            }
-
-            clipboard.cellData[rowId][colId] = { ...cellData[selectedSheet][rowId - 1][colId - 1] };
-        }
-    });
+  });
 });
 
 //pastes the cut or copied contents onto the sheet
 $("#paste").click(function () {
-    if (contentCut) {
-        emptyPreviousSheet();
-    }
+  if (contentCut) {
+    emptyPreviousSheet();
+  }
 
-    let startCell = getRowCol($(".input-cell.selected")[0]);
-    let rows = Object.keys(clipboard.cellData);
+  let startCell = getRowCol($(".input-cell.selected")[0]);
+  let rows = Object.keys(clipboard.cellData);
 
-    for (let i of rows) {
-        let cols = Object.keys(clipboard.cellData[i]);
+  for (let i of rows) {
+    let cols = Object.keys(clipboard.cellData[i]);
 
-        for (let j of cols) {
-            if (contentCut) {
-                delete cellData[selectedSheet][i - 1][j - 1];
+    for (let j of cols) {
+      if (contentCut) {
+        delete cellData[selectedSheet][i - 1][j - 1];
 
-                if (Object.keys(cellData[selectedSheet][i - 1]).length == 0) {
-                    delete cellData[selectedSheet][i - 1];
-                }
-            }
+        if (Object.keys(cellData[selectedSheet][i - 1]).length === 0) {
+          delete cellData[selectedSheet][i - 1];
         }
+      }
     }
+  }
 
-    for (let i of rows) {
-        let cols = Object.keys(clipboard.cellData[i]);
+  for (let i of rows) {
+    let cols = Object.keys(clipboard.cellData[i]);
 
-        for (let j of cols) {
-            let rowDistance = parseInt(i) - parseInt(clipboard.startCell[0]);
-            let colDistance = parseInt(j) - parseInt(clipboard.startCell[1]);
+    for (let j of cols) {
+      let rowDistance = parseInt(i) - parseInt(clipboard.startCell[0]);
+      let colDistance = parseInt(j) - parseInt(clipboard.startCell[1]);
 
-            if (!cellData[selectedSheet][startCell[0] + rowDistance - 1]) {
-                cellData[selectedSheet][startCell[0] + rowDistance - 1] = {};
-            }
+      if (!cellData[selectedSheet][startCell[0] + rowDistance - 1]) {
+        cellData[selectedSheet][startCell[0] + rowDistance - 1] = {};
+      }
 
-            cellData[selectedSheet][startCell[0] + rowDistance - 1][startCell[1] + colDistance - 1] = { ...clipboard.cellData[i][j] };
-        }
+      cellData[selectedSheet][startCell[0] + rowDistance - 1][
+        startCell[1] + colDistance - 1
+      ] = { ...clipboard.cellData[i][j] };
     }
+  }
 
-    loadCurrentSheet();
+  loadCurrentSheet();
 
-    if (contentCut) {
-        contentCut = false;
-        clipboard = { startCell: [], cellData: {} };
-    }
+  if (contentCut) {
+    contentCut = false;
+    clipboard = { startCell: [], cellData: {} };
+  }
 });
 
 //takes the formula input
 $("#formula-input").blur(function () {
-    if ($(".input-cell.selected").length > 0) {
-        let tempElements = $(this).text().split(" ");
-        let elements = [];
+  if ($(".input-cell.selected").length > 0) {
+    let tempElements = $(this).text().split(" ");
+    let elements = [];
 
-        for (let i of tempElements) {
-            if (i.length >= 2) {
-                i = i.replace("(", "");
-                i = i.replace(")", "");
-                elements.push(i);
-            }
-        }
-
-        $(".input-cell.selected").each(function (index, data) {
-            if (updateStreams(data, elements, false)) {
-                let [rowId, colId] = getRowCol(data);
-                cellData[selectedSheet][rowId - 1][colId - 1].formula = formula;
-                evalFormula($(`.column-${colId}`).attr("id") + rowId);
-            } else {
-                alert("Formula is not valid");
-            }
-        });
-    } else {
-        alert("!Please select a cell First");
+    for (let i of tempElements) {
+      if (i.length >= 2) {
+        i = i.replace("(", "");
+        i = i.replace(")", "");
+        elements.push(i);
+      }
     }
+
+    $(".input-cell.selected").each(function (index, data) {
+      if (updateStreams(data, elements, false)) {
+        let [rowId, colId] = getRowCol(data);
+        cellData[selectedSheet][rowId - 1][colId - 1].formula = formula;
+        evalFormula($(`.column-${colId}`).attr("id") + rowId);
+      } else {
+        alert("Formula is not valid");
+      }
+    });
+  } else {
+    alert("!Please select a cell First");
+  }
 });
 
 //selects all the cells on the sheet
 $("#select-all").click(function () {
-    $(".input-cell").addClass("selected");
+  $(".input-cell").addClass("selected");
 });

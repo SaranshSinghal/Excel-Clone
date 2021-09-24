@@ -122,10 +122,10 @@
         appendToStorage: function(color) {
 	        if ($.fn.colorPick.defaults.allowRecent === true) {
 	        	var storedColors = JSON.parse(localStorage.getItem("colorPickRecentItems"));
-				if (storedColors == null) {
+				if (storedColors === null) {
 		     	    storedColors = [];
 	        	}
-				if ($.inArray(color, storedColors) == -1) {
+				if ($.inArray(color, storedColors) === -1) {
 		    	    storedColors.unshift(color);
 					storedColors = storedColors.slice(0, $.fn.colorPick.defaults.recentMax)
 					localStorage.setItem("colorPickRecentItems", JSON.stringify(storedColors));
@@ -147,12 +147,12 @@
             }
 			if ($.fn.colorPick.defaults.allowRecent === true) {
 				$("#colorPick").append('<span style="margin-top:5px">Recent:</span>');
-				if (JSON.parse(localStorage.getItem("colorPickRecentItems")) == null || JSON.parse(localStorage.getItem("colorPickRecentItems")) == []) {
+				if (JSON.parse(localStorage.getItem("colorPickRecentItems")) === null || JSON.parse(localStorage.getItem("colorPickRecentItems")) === []) {
 					$("#colorPick").append('<div class="colorPickButton colorPickDummy"></div>');
 				} else {
 					jQuery.each(JSON.parse(localStorage.getItem("colorPickRecentItems")), function (index, item) {
 		        		$("#colorPick").append('<div class="colorPickButton" hexValue="' + item + '" style="background:' + item + '"></div>');
-                        if (index == $.fn.colorPick.defaults.recentMax-1) {
+                        if (index === $.fn.colorPick.defaults.recentMax-1) {
                             return false;
                         }
 					});
