@@ -1,18 +1,17 @@
 //variables
-let cellData = {
-  Sheet1: {},
-};
+let cellData = { Sheet1: {} };
 let saved = true;
 let selectedSheet = "Sheet1";
 let totalSheets = 1;
 let lastlyAddedSheet = 1;
+
 let defaultProperties = {
   "font-family": "Noto Sans",
   "font-size": 14,
   text: "",
   bold: false,
   italic: false,
-  underlined: false,
+  underline: false,
   alignment: "left",
   color: "#444",
   bgcolor: "#fff",
@@ -20,6 +19,7 @@ let defaultProperties = {
   upStream: [],
   downStream: [],
 };
+
 let count = 0;
 let startcellSelected = false;
 let startCell = {};
@@ -32,9 +32,7 @@ let clipboard = { startCell: [], cellData: {} };
 let contentCut = false;
 
 //set scroll speed
-const ps = new PerfectScrollbar("#cells", {
-  wheelSpeed: 15,
-});
+const ps = new PerfectScrollbar("#cells", { wheelSpeed: 10 });
 
 //row and column names
 for (let i = 1; i <= 100; i++) {
@@ -82,6 +80,7 @@ $(".input-cell").dblclick(function () {
   $(".input-cell.selected").removeClass(
     "selected top-selected bottom-selected left-selected right-selected",
   );
+
   $(this).addClass("selected");
   $(this).attr("contenteditable", "true");
   $(this).focus();
@@ -92,7 +91,7 @@ $(".input-cell").blur(function () {
   $(this).attr("contenteditable", "false");
   let [rowId, colId] = getRowCol(this);
 
-  if (cellData[selectedSheet][rowId - 1][colId - 1].formula != "")
+  if (cellData[selectedSheet][rowId - 1][colId - 1].formula !== "")
     updateStreams(this, []);
 
   cellData[selectedSheet][rowId - 1][colId - 1].formula = "";
@@ -121,7 +120,6 @@ function updateStreams(ele, elements, update, oldUpStream) {
   ) {
     let downStream = cellData[selectedSheet][rowId - 1][colId - 1].downStream;
     let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
-
     for (let i of downStream) if (elements.includes(i)) return false;
 
     for (let i of downStream) {
@@ -157,6 +155,7 @@ function updateStreams(ele, elements, update, oldUpStream) {
         let index = cellData[selectedSheet][calRowId - 1][
           calColId - 1
         ].downStream.indexOf(selfColCode + rowId);
+
         cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.splice(
           index,
           1,
@@ -217,13 +216,13 @@ function updateStreams(ele, elements, update, oldUpStream) {
         upStream: [],
         downStream: [selfColCode + rowId],
       };
-    } else if (!cellData[selectedSheet][calRowId - 1][calColId - 1]) {
+    } else if (!cellData[selectedSheet][calRowId - 1][calColId - 1])
       cellData[selectedSheet][calRowId - 1][calColId - 1] = {
         ...defaultProperties,
         upStream: [],
         downStream: [selfColCode + rowId],
       };
-    } else
+    else
       cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.push(
         selfColCode + rowId,
       );
@@ -245,6 +244,7 @@ function codeToValue(code) {
   let colId = parseInt(
     $(`#${colCode}`).attr("class").split(" ")[1].split("-")[1],
   );
+
   let rowId = parseInt(rowCode);
   return [rowId, colId];
 }
@@ -253,7 +253,7 @@ function codeToValue(code) {
 function updateCellData(property, value) {
   let currCellData = JSON.stringify(cellData);
 
-  if (value != defaultProperties[property]) {
+  if (value !== defaultProperties[property]) {
     $(".input-cell.selected").each(function (index, data) {
       let [rowId, colId] = getRowCol(data);
 
@@ -264,6 +264,7 @@ function updateCellData(property, value) {
           upStream: [],
           downStream: [],
         };
+
         cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
       } else {
         if (cellData[selectedSheet][rowId - 1][colId - 1] === undefined) {
@@ -272,6 +273,7 @@ function updateCellData(property, value) {
             upStream: [],
             downStream: [],
           };
+
           cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
         } else cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
       }
@@ -299,7 +301,7 @@ function updateCellData(property, value) {
     });
   }
 
-  if (saved && currCellData != JSON.stringify(cellData)) saved = false;
+  if (saved && currCellData !== JSON.stringify(cellData)) saved = false;
 }
 
 //evaluates the value of the expression in formula input box
@@ -307,7 +309,7 @@ function evalFormula(cell) {
   let [rowId, colId] = codeToValue(cell);
   let formula = cellData[selectedSheet][rowId - 1][colId - 1].formula;
 
-  if (formula != "") {
+  if (formula !== "") {
     let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
     let upStreamValue = [];
 
@@ -328,7 +330,6 @@ function evalFormula(cell) {
   }
 
   let downStream = cellData[selectedSheet][rowId - 1][colId - 1].downStream;
-
   for (let i = downStream.length - 1; i >= 0; i--) evalFormula(downStream[i]);
 }
 
@@ -352,7 +353,7 @@ function loadCurrentSheet() {
         color: data[rowId][colId].color,
         "font-weight": data[rowId][colId].bold ? "bold" : "",
         "font-style": data[rowId][colId].italic ? "italic" : "",
-        "text-decoration": data[rowId][colId].underlined ? "underlined" : "",
+        "text-decoration": data[rowId][colId].underline ? "underline" : "",
         "text-align": data[rowId][colId].alignment,
       });
     }
@@ -454,7 +455,7 @@ function changeHeader([rowId, colId]) {
   $(`.alignment[data-type=${data.alignment}]`).addClass("selected");
   selectUnselectStyle(data, "bold");
   selectUnselectStyle(data, "italic");
-  selectUnselectStyle(data, "underlined");
+  selectUnselectStyle(data, "underline");
   $("#fill-color").css("border-bottom", `4px solid ${data.bgcolor}`);
   $("#text-color").css("border-bottom", `4px solid ${data.color}`);
   $("#font-family").val(data["font-family"]);
@@ -585,8 +586,8 @@ $("#italic").click(function () {
   setStyle(this, "italic", "font-style", "italic");
 });
 
-$("#underlined").click(function () {
-  setStyle(this, "underlined", "text-decoration", "underlined");
+$("#underline").click(function () {
+  setStyle(this, "underline", "text-decoration", "underline");
 });
 
 function setStyle(ele, property, key, value) {
@@ -631,7 +632,7 @@ $(".pick-color").colorPick({
   ],
 
   onColorSelected: function () {
-    if (this.color != "#444") {
+    if (this.color !== "#444") {
       if ($(this.element.children()[1]).attr("id") === "fill-color") {
         $(".input-cell.selected").css("background-color", this.color);
         $("#fill-color").css("border-bottom", `4px solid ${this.color}`);
@@ -664,11 +665,8 @@ $("#text-color").click(function () {
 $(".menu-selector").change(function () {
   let value = $(this).val();
   let key = $(this).attr("id");
-
   if (key === "font-family") $("#font-family").css(key, value);
-
   if (!isNaN(value)) value = parseInt(value);
-
   $(".input-cell.selected").css(key, value);
   updateCellData(key, value);
 });
@@ -685,10 +683,12 @@ function addSheetEvents() {
     e.preventDefault();
     selectSheet(this);
     $(".sheet-options-modal").remove();
+
     let modal = $(`<div class="sheet-options-modal">
                         <div class="option sheet-rename">Rename</div>
                         <div class="option sheet-delete">Delete</div>
                     </div>`);
+
     modal.css({ left: e.pageX });
     $(".container").append(modal);
 
@@ -805,11 +805,9 @@ function renameSheet() {
     let newCellData = {};
 
     for (let i of Object.keys(cellData)) {
-      if (i === selectedSheet) {
+      if (i === selectedSheet)
         newCellData[newSheetName] = cellData[selectedSheet];
-      } else {
-        newCellData[i] = cellData[i];
-      }
+      else newCellData[i] = cellData[i];
     }
 
     cellData = newCellData;
@@ -829,13 +827,8 @@ function deleteSheet() {
   $(".sheet-modal-parent").remove();
   let sheetIndex = Object.keys(cellData).indexOf(selectedSheet);
   let currSelectedSheet = $(".sheet-tab.selected");
-
-  if (sheetIndex === 0) {
-    selectSheet(currSelectedSheet.next()[0]);
-  } else {
-    selectSheet(currSelectedSheet.prev()[0]);
-  }
-
+  if (sheetIndex === 0) selectSheet(currSelectedSheet.next()[0]);
+  else selectSheet(currSelectedSheet.prev()[0]);
   delete cellData[currSelectedSheet.text()];
   currSelectedSheet.remove();
   totalSheets--;
@@ -848,28 +841,27 @@ $(".add-sheet").click(function () {
   totalSheets++;
   cellData[`Sheet${lastlyAddedSheet}`] = {};
   $(".sheet-tab.selected").removeClass("selected");
+
   $(".sheet-tab-container").append(
     `<div class="sheet-tab selected">Sheet${lastlyAddedSheet}</div>`,
   );
+
   selectSheet();
   addSheetEvents();
   $(".sheet-tab.selected")[0].scrollIntoView();
 });
 
 //scrolls through the sheets, selects the next or previous sheet
-$(".left-scroller, .right-scroller").click(function () {
+$(".right-scroller, .left-scroller").click(function () {
   let keysArray = Object.keys(cellData);
   let selectedSheetIndex = keysArray.indexOf(selectedSheet);
+  let currSelectedSheet = $(".sheet-tab.selected");
 
-  if (selectedSheetIndex != 0 && $(this).text() === "chevron_left") {
-    selectSheet($(".sheet-tab.selected").prev()[0]);
-  } else if (
-    selectedSheetIndex != keysArray.length - 1 &&
-    $(this).text() === "chevron_right"
-  ) {
-    selectSheet($(".sheet-tab.selected").next()[0]);
-  }
+  if (selectedSheetIndex !== keysArray.length - 1)
+    selectSheet(currSelectedSheet.next());
 
+  if (selectedSheetIndex !== 0 && $(this).text() === "chevron_left")
+    selectSheet(currSelectedSheet.prev());
   $(".sheet-tab.selected")[0].scrollIntoView();
 });
 
@@ -897,6 +889,7 @@ $("#menu-file").click(function () {
                         <div class="file-recent-modal"></div>
                         <div class="file-transparent"></div>
                     </div>`);
+
   $(".container").append(fileModal);
 
   fileModal.animate(
@@ -920,9 +913,8 @@ $("#menu-file").click(function () {
   });
 
   $(".new").click(function () {
-    if (saved) {
-      newFile();
-    } else {
+    if (saved) newFile();
+    else {
       $(".container").append(`<div class="sheet-modal-parent">
                                         <div class="sheet-delete-modal">
                                             <div class="sheet-modal-title">${$(
@@ -953,9 +945,7 @@ $("#menu-file").click(function () {
   });
 
   $(".save").click(function () {
-    if (!saved) {
-      saveFile();
-    }
+    if (!saved) saveFile();
   });
 
   $(".open").click(function () {
@@ -968,9 +958,11 @@ function newFile() {
   emptyPreviousSheet();
   cellData = { Sheet1: {} };
   $(".sheet-tab").remove();
+
   $(".sheet-tab-container").append(
     `<div class="sheet-tab selected">Sheet1</div>`,
   );
+
   addSheetEvents();
   selectedSheet = "Sheet1";
   totalSheets = 1;
@@ -1000,9 +992,11 @@ function saveFile(newClicked) {
   $(".yes-button").click(function () {
     $(".title").text($(".sheet-modal-input").val());
     let a = document.createElement("a");
+
     a.href = `data:application/json, ${encodeURIComponent(
       JSON.stringify(cellData),
     )}`;
+
     a.download = $(".title").text() + ".json";
     $(".container").append(a);
     a.click();
@@ -1013,9 +1007,7 @@ function saveFile(newClicked) {
   $(".no-button, .yes-button").click(function () {
     $(".sheet-modal-parent").remove();
 
-    if (newClicked) {
-      newFile();
-    }
+    if (newClicked) newFile();
   });
 }
 
@@ -1030,6 +1022,7 @@ function openFile() {
     $(".title").text(file.name.split(".json")[0]);
     let reader = new FileReader();
     reader.readAsText(file);
+
     reader.onload = () => {
       emptyPreviousSheet();
       $(".sheet-tab").remove();
@@ -1040,10 +1033,10 @@ function openFile() {
         if (i.includes("Sheet")) {
           let splitSheetArray = i.split("Sheet");
 
-          if (splitSheetArray === 2 && !isNaN(splitSheetArray[1])) {
+          if (splitSheetArray === 2 && !isNaN(splitSheetArray[1]))
             lastlyAddedSheet = parseInt(splitSheetArray[1]);
-          }
         }
+
         $(".sheet-tab-container").append(
           `<div class="sheet-tab selected">${i}</div>`,
         );
@@ -1062,10 +1055,7 @@ function openFile() {
 
 //used cut, copy contents of selected cells
 $("#copy, #cut").click(function () {
-  if ($(this).text() === "content_cut") {
-    contentCut = true;
-  }
-
+  if ($(this).text() === "content_cut") contentCut = true;
   clipboard = { startCell: [], cellData: {} };
   clipboard.startCell = getRowCol($(".input-cell.selected")[0]);
 
@@ -1076,9 +1066,7 @@ $("#copy, #cut").click(function () {
       cellData[selectedSheet][rowId - 1] &&
       cellData[selectedSheet][rowId - 1][colId - 1]
     ) {
-      if (!clipboard.cellData[rowId]) {
-        clipboard.cellData[rowId] = {};
-      }
+      if (!clipboard.cellData[rowId]) clipboard.cellData[rowId] = {};
 
       clipboard.cellData[rowId][colId] = {
         ...cellData[selectedSheet][rowId - 1][colId - 1],
@@ -1089,10 +1077,7 @@ $("#copy, #cut").click(function () {
 
 //pastes the cut or copied contents onto the sheet
 $("#paste").click(function () {
-  if (contentCut) {
-    emptyPreviousSheet();
-  }
-
+  if (contentCut) emptyPreviousSheet();
   let startCell = getRowCol($(".input-cell.selected")[0]);
   let rows = Object.keys(clipboard.cellData);
 
@@ -1103,9 +1088,8 @@ $("#paste").click(function () {
       if (contentCut) {
         delete cellData[selectedSheet][i - 1][j - 1];
 
-        if (Object.keys(cellData[selectedSheet][i - 1]).length === 0) {
+        if (Object.keys(cellData[selectedSheet][i - 1]).length === 0)
           delete cellData[selectedSheet][i - 1];
-        }
       }
     }
   }
@@ -1117,9 +1101,8 @@ $("#paste").click(function () {
       let rowDistance = parseInt(i) - parseInt(clipboard.startCell[0]);
       let colDistance = parseInt(j) - parseInt(clipboard.startCell[1]);
 
-      if (!cellData[selectedSheet][startCell[0] + rowDistance - 1]) {
+      if (!cellData[selectedSheet][startCell[0] + rowDistance - 1])
         cellData[selectedSheet][startCell[0] + rowDistance - 1] = {};
-      }
 
       cellData[selectedSheet][startCell[0] + rowDistance - 1][
         startCell[1] + colDistance - 1
@@ -1154,13 +1137,9 @@ $("#formula-input").blur(function () {
         let [rowId, colId] = getRowCol(data);
         cellData[selectedSheet][rowId - 1][colId - 1].formula = formula;
         evalFormula($(`.column-${colId}`).attr("id") + rowId);
-      } else {
-        alert("Formula is not valid");
-      }
+      } else alert("Formula is not valid");
     });
-  } else {
-    alert("!Please select a cell First");
-  }
+  } else alert("!Please select a cell First");
 });
 
 //selects all the cells on the sheet

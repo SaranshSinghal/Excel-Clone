@@ -23,6 +23,10 @@ body {
   padding: 0.5rem;
   height: 5vh;
   color: #fff;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .menu-bar {
@@ -30,6 +34,10 @@ body {
   height: 4.5vh;
   font-size: 0.9rem;
   background-color: #217346;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .menu-bar-item {
@@ -61,6 +69,10 @@ body {
   display: flex;
   height: 5vh;
   align-items: center;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .menu-icon {
@@ -118,6 +130,10 @@ body {
   align-items: center;
   background-color: #efefef;
   padding: 0.1rem 0.3rem;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #selected-cell {
@@ -179,6 +195,10 @@ body {
   background-color: #efefef;
   display: flex;
   overflow: hidden;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .column-name {
@@ -196,6 +216,10 @@ body {
   background-color: #efefef;
   border: 1px solid #a0a0a0;
   overflow: hidden;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .row-name {
@@ -266,6 +290,10 @@ body {
   height: 4vh;
   width: 100vw;
   align-items: center;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .sheet-scroller {
@@ -498,4 +526,8 @@ body {
 .file-transparent {
   width: 50%;
   height: 100vh;
+}
+
+input {
+  display: none;
 }
